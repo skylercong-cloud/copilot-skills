@@ -1,0 +1,10 @@
+{
+  "skills": [
+    {
+      "name": "shopify-page-dev",
+      "description": "Build Shopify theme pages from Figma designs (template JSON + responsive SCSS)",
+      "version": "0.1.0",
+      "prompts": ["dev-page.prompt.md"]
+    }
+  ]
+}

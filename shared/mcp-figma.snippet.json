@@ -1,0 +1,17 @@
+{
+  "_comment": "把下面 servers.Figma 段合并到 VS Code 用户级 settings.json 的 chat.mcp.servers 中，或合并到项目 .vscode/mcp.json。注意 figma-api-key 通过环境变量 FIGMA_API_KEY 注入，请先 setx FIGMA_API_KEY \"figd_xxx\"（重开终端生效）。",
+  "servers": {
+    "Figma": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "figma-developer-mcp",
+        "--figma-api-key=${env:FIGMA_API_KEY}",
+        "--stdio"
+      ]
+    }
+  }
+}
