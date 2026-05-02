@@ -4,6 +4,8 @@ Reusable GitHub Copilot Skills (and their prompts) installable into your **user-
 
 After installing, the skills automatically work in **every** project on your machine — no per-project setup required.
 
+> 📖 中文使用 / 升级 / 维护完整指南：[USAGE.md](USAGE.md)
+
 ## Install paths
 
 | Resource | Windows                                 | macOS                                              | Linux                          |
