@@ -6,10 +6,10 @@ After installing, the skills automatically work in **every** project on your mac
 
 ## Install paths
 
-| Resource | Windows | macOS | Linux |
-|---|---|---|---|
-| Skill | `%USERPROFILE%\.copilot\skills\<name>\` | `~/.copilot/skills/<name>/` | `~/.copilot/skills/<name>/` |
-| Prompts | `%APPDATA%\Code\User\prompts\` | `~/Library/Application Support/Code/User/prompts/` | `~/.config/Code/User/prompts/` |
+| Resource | Windows                                 | macOS                                              | Linux                          |
+| -------- | --------------------------------------- | -------------------------------------------------- | ------------------------------ |
+| Skill    | `%USERPROFILE%\.copilot\skills\<name>\` | `~/.copilot/skills/<name>/`                        | `~/.copilot/skills/<name>/`    |
+| Prompts  | `%APPDATA%\Code\User\prompts\`          | `~/Library/Application Support/Code/User/prompts/` | `~/.config/Code/User/prompts/` |
 
 ## One-line install
 
@@ -39,8 +39,8 @@ curl -fsSL https://raw.githubusercontent.com/skylercong-cloud/copilot-skills/mai
 
 ## Available skills
 
-| Name | Description |
-|---|---|
+| Name               | Description                                                                    |
+| ------------------ | ------------------------------------------------------------------------------ |
 | `shopify-page-dev` | Build Shopify theme pages from Figma designs (template JSON + responsive SCSS) |
 
 List from CLI:
@@ -57,12 +57,12 @@ curl -fsSL .../install.sh | bash -s -- --list
 
 ## Parameters
 
-| PowerShell | bash | Description |
-|---|---|---|
-| `-Skill <name>` | `--skill <name>` | Which skill to install (default: `shopify-page-dev`) |
-| `-Force` | `--force` | Overwrite existing files |
-| `-NoPrompts` | `--no-prompts` | Skip installing prompt files into VS Code |
-| `-List` | `--list` | Print available skills and exit |
+| PowerShell      | bash             | Description                                                     |
+| --------------- | ---------------- | --------------------------------------------------------------- |
+| `-Skill <name>` | `--skill <name>` | Which skill to install (default: `shopify-page-dev`)            |
+| `-Force`        | `--force`        | Overwrite existing files                                        |
+| `-NoPrompts`    | `--no-prompts`   | Skip installing prompt files into VS Code                       |
+| `-List`         | `--list`         | Print available skills and exit                                 |
 | `-Ref <branch>` | `--ref <branch>` | Install from a specific branch / tag / commit (default: `main`) |
 
 ## Update

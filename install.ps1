@@ -35,8 +35,8 @@
 [CmdletBinding()]
 param(
   [string]$Skill = "shopify-page-dev",
-  [string]$Repo  = "https://github.com/skylercong-cloud/copilot-skills.git",
-  [string]$Ref   = "main",
+  [string]$Repo = "https://github.com/skylercong-cloud/copilot-skills.git",
+  [string]$Ref = "main",
   [switch]$Force,
   [switch]$NoPrompts,
   [switch]$List
@@ -45,11 +45,11 @@ param(
 $ErrorActionPreference = "Stop"
 
 function Write-Section([string]$msg) { Write-Host ""; Write-Host "==> $msg" -ForegroundColor Cyan }
-function Write-Ok([string]$msg)      { Write-Host "  [OK] $msg" -ForegroundColor Green }
-function Write-Skip([string]$msg)    { Write-Host "  [SKIP] $msg" -ForegroundColor Yellow }
-function Write-Warn2([string]$msg)   { Write-Host "  [!] $msg" -ForegroundColor Yellow }
+function Write-Ok([string]$msg) { Write-Host "  [OK] $msg" -ForegroundColor Green }
+function Write-Skip([string]$msg) { Write-Host "  [SKIP] $msg" -ForegroundColor Yellow }
+function Write-Warn2([string]$msg) { Write-Host "  [!] $msg" -ForegroundColor Yellow }
 
-$skillsDir  = Join-Path $env:USERPROFILE ".copilot\skills"
+$skillsDir = Join-Path $env:USERPROFILE ".copilot\skills"
 $promptsDir = Join-Path $env:APPDATA     "Code\User\prompts"
 
 # ---------- 1. Fetch repo into temp ----------
@@ -58,14 +58,20 @@ $tmp = Join-Path $env:TEMP ("copilot-skills-" + [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $tmp | Out-Null
 
 $haveGit = $false
-try { git --version *> $null; $haveGit = $true } catch { $haveGit = $false }
+try { & git --version *> $null; if ($LASTEXITCODE -eq 0) { $haveGit = $true } } catch { $haveGit = $false }
 
 if ($haveGit) {
-  git clone --depth 1 --branch $Ref $Repo $tmp 2>$null
-  if ($LASTEXITCODE -ne 0) { throw "git clone failed for $Repo @ $Ref" }
+  # Suppress stderr-as-error noise from native git output under $ErrorActionPreference=Stop
+  $prevPref = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  & git clone --depth 1 --branch $Ref $Repo $tmp 2>&1 | Out-Null
+  $code = $LASTEXITCODE
+  $ErrorActionPreference = $prevPref
+  if ($code -ne 0) { throw "git clone failed (exit $code) for $Repo @ $Ref" }
   Write-Ok "cloned via git"
-} else {
-  $repoZipBase = $Repo -replace '\.git$',''
+}
+else {
+  $repoZipBase = $Repo -replace '\.git$', ''
   $zipUrl = "$repoZipBase/archive/refs/heads/$Ref.zip"
   $zip = Join-Path $tmp "repo.zip"
   Invoke-WebRequest -Uri $zipUrl -OutFile $zip -UseBasicParsing
@@ -87,7 +93,8 @@ try {
       foreach ($s in $manifest.skills) {
         Write-Host ("  - {0}  (v{1})  {2}" -f $s.name, $s.version, $s.description)
       }
-    } else {
+    }
+    else {
       Write-Warn2 "manifest.json not found in repo"
     }
     return
@@ -105,7 +112,8 @@ try {
   if ((Test-Path $skillDst) -and -not $Force) {
     Write-Warn2 "skill already installed at $skillDst"
     Write-Warn2 "rerun with -Force to overwrite"
-  } else {
+  }
+  else {
     if (Test-Path $skillDst) { Remove-Item $skillDst -Recurse -Force }
     New-Item -ItemType Directory -Path $skillDst -Force | Out-Null
     # copy everything except prompts/
@@ -126,7 +134,8 @@ try {
         $target = Join-Path $promptsDir $p.Name
         if ((Test-Path $target) -and -not $Force) {
           Write-Skip "$($p.Name) (exists, use -Force)"
-        } else {
+        }
+        else {
           Copy-Item $p.FullName -Destination $target -Force
           Write-Ok $p.Name
           $promptFiles += $p.Name
@@ -158,7 +167,8 @@ try {
     Write-Warn2 "FIGMA_API_KEY user environment variable is not set."
     Write-Host  '         Run:  setx FIGMA_API_KEY "figd_xxxxxxxx"' -ForegroundColor Gray
     Write-Host  '         Then reopen your terminal / VS Code.' -ForegroundColor Gray
-  } else {
+  }
+  else {
     Write-Ok "FIGMA_API_KEY is set"
   }
 
