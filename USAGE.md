@@ -100,10 +100,10 @@ source ~/.zshrc
         "-y",
         "figma-developer-mcp",
         "--figma-api-key=${env:FIGMA_API_KEY}",
-        "--stdio"
-      ]
-    }
-  }
+        "--stdio",
+      ],
+    },
+  },
 }
 ```
 
@@ -206,16 +206,16 @@ cd copilot-skills
 
 ### 2. 修改文件
 
-| 想做的事                  | 改哪里                                                                |
-| ------------------------- | --------------------------------------------------------------------- |
-| 改 Skill 主指令           | `skills/shopify-page-dev/SKILL.md`                                    |
-| 改 section 速查表         | `skills/shopify-page-dev/references/section-reference.md`             |
-| 追加设计模式经验          | `skills/shopify-page-dev/references/pattern-learnings.md`             |
-| 改 Slash 命令行为         | `skills/shopify-page-dev/prompts/dev-page.prompt.md`                  |
-| 改 Figma MCP 模板         | `shared/mcp-figma.snippet.json`                                       |
-| 改 Windows 安装逻辑       | `install.ps1`                                                         |
-| 改 macOS/Linux 安装逻辑   | `install.sh`                                                          |
-| 改 README 文案            | `README.md` / `USAGE.md`                                              |
+| 想做的事                | 改哪里                                                    |
+| ----------------------- | --------------------------------------------------------- |
+| 改 Skill 主指令         | `skills/shopify-page-dev/SKILL.md`                        |
+| 改 section 速查表       | `skills/shopify-page-dev/references/section-reference.md` |
+| 追加设计模式经验        | `skills/shopify-page-dev/references/pattern-learnings.md` |
+| 改 Slash 命令行为       | `skills/shopify-page-dev/prompts/dev-page.prompt.md`      |
+| 改 Figma MCP 模板       | `shared/mcp-figma.snippet.json`                           |
+| 改 Windows 安装逻辑     | `install.ps1`                                             |
+| 改 macOS/Linux 安装逻辑 | `install.sh`                                              |
+| 改 README 文案          | `README.md` / `USAGE.md`                                  |
 
 ### 3. 本地验证（可选，强烈建议改 install.ps1 时跑）
 
@@ -278,8 +278,18 @@ description: 'Use when: ... (告诉 Copilot 何时触发这个 skill)'
 ```json
 {
   "skills": [
-    { "name": "shopify-page-dev",   "description": "...", "version": "0.1.0", "prompts": ["dev-page.prompt.md"] },
-    { "name": "shopify-section-dev","description": "...", "version": "0.1.0", "prompts": ["new-section.prompt.md"] }
+    {
+      "name": "shopify-page-dev",
+      "description": "...",
+      "version": "0.1.0",
+      "prompts": ["dev-page.prompt.md"]
+    },
+    {
+      "name": "shopify-section-dev",
+      "description": "...",
+      "version": "0.1.0",
+      "prompts": ["new-section.prompt.md"]
+    }
   ]
 }
 ```

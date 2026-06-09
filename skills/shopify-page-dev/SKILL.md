@@ -416,6 +416,31 @@ background-color: r.re(#f5f5f5, #ffffff);
 - **Video playback**: Use common-media (supports YouTube, HTML5 video, autoplay)
 - **Highly complex interactions**: Create a new section with custom JS, mark as `<!-- TODO: Implement interaction -->`
 
+#### Global Plugin Availability in Section Files
+
+> The following plugins are already loaded globally in `theme.liquid` — **do NOT re-import them** in section files.
+
+| Plugin | 引入方式 | 注意事项 |
+| --- | --- | --- |
+| **GSAP** (`gsap` + `ScrollTrigger` + `ScrollToPlugin`) | `defer` 脚本，全局引入 | ① 因为是 `defer` 加载，section 内的 JS 必须包在 `DOMContentLoaded` 中；② `ScrollTrigger` **未全局注册**，每个需要用它的 section 必须自己调用一次 `gsap.registerPlugin(ScrollTrigger)` |
+| **Swiper** | 同步脚本，全局引入（CSS + JS） | 版本为 **4.5**，与 Swiper 8/9 的 API 有差异，编写时注意使用 v4.5 的 API 写法 |
+| **Plyr** | 同步脚本，全局引入（CSS + JS） | 可直接 `new Plyr('#video-id', { ... })` 使用 |
+
+**GSAP 在 section 中的标准用法：**
+
+```html
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    gsap.registerPlugin(ScrollTrigger); // 必须手动注册
+    gsap.to('.my-el', {
+      scrollTrigger: { trigger: '.my-el', start: 'top 80%' },
+      opacity: 1,
+      y: 0,
+    });
+  });
+</script>
+```
+
 ### Step 8: Create New Section (only when needed)
 
 **Before creating a new section**, confirm:
@@ -715,3 +740,43 @@ PC 端的 `flex-direction: row` 在移动端并不会自动变为 `column`。**�
 ```
 
 实操规则：编写移动端样式前，先确认对应的 PC 端选择器完整路径，照抄该路径写进 `@media` 块。
+
+### 8. 元素宽高非必要不写死
+
+页面元素的 `width`、`height`、`max-width`、`max-height` 非必要时**不要写死固定值**，尽量让元素的宽高由内容自然撑开。只有在需要明确限制尺寸（如图片容器、固定宽度卡片）时才写固定值，并用 `r.vw()` 或 `r.resp()` 转换为响应式值而非 raw px。
+
+### 9. 外部静态资源的引入规范
+
+在 section 文件中引入外部静态资源时，必须遵守以下规范：
+
+**引入 CSS 文件：**
+
+```liquid
+{{ 'XXX.css' | asset_url | stylesheet_tag }}
+```
+
+**引入 JS 文件：**
+
+```html
+<script src="{{ 'XXX.js' | asset_url }}" defer="defer"></script>
+```
+
+> 注意：JS 文件引入需要加 `defer="defer"`，避免阻塞页面渲染。较简单的样式或脚本（不超过 50 行、无需复用）在 section 文件内直接用 `<style>` / `<script>` 块完成即可，无需单独提取为 asset 文件。
+
+### 10. Section 的 JS 代码应包在 `DOMContentLoaded` 中
+
+一般情况下，section 内的 `<script>` 代码应包裹在 `DOMContentLoaded` 事件中，确保 DOM 节点已就绪后再执行：
+
+```html
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // section 逻辑
+  });
+</script>
+```
+
+**例外情况**（不需要包在 `DOMContentLoaded` 中）：
+
+- 仅声明变量或配置对象，不操作 DOM
+- 使用了 `defer` 属性的外部脚本（浏览器保证在 DOM 解析完成后才执行）
+- 有明确的执行时机要求（如需要在某个第三方库回调中执行）
