@@ -115,6 +115,32 @@ source ~/.zshrc
 
 让它重新扫描 prompts 目录与 MCP 配置。
 
+### 4. scss-kit 0.7.x 响应式约定
+
+`shopify-page-dev` 按 `create-shopify-scss-autofill@0.7.0` 的接口生成 SCSS：
+
+```scss
+font-size: r.resp(24px, 16px);                          // 默认 readable
+font-size: r.resp(24px, 16px, dense);                   // 密集内容
+font-size: r.resp(24px, 16px, readable, dense);         // PC / Mobile 分别指定
+font-size: r.resp(24px, 16px, (min: 0.7, max: 1.3));    // 自定义边界
+```
+
+不要再把 `h1`、`h2`、`body` 等元素类型作为 `r.resp()` 的第三个参数，也不要配置旧的 `floor`、`ceiling`、语义系数表或 `mobileProfilePreset`。默认系数为 `readable: { min: 0.625, max: 1.5 }` 和 `dense: { min: 0.5, max: 1.5 }`，边界直接由设计值乘以系数计算。
+
+需要让整个组件共享密集模式时，在父选择器声明：
+
+```scss
+.product-card {
+  @include r.mode(dense);
+
+  .title { font-size: r.resp(24px, 16px); }
+  .description { font-size: r.resp(20px, 14px, readable); }
+}
+```
+
+大屏固定版心可配置 `fixedCore`，例如 `{ "breakpoint": 1500, "width": 1200 }`。已登记但尚未创建的 `autofill.entries` 文件不会阻塞 `npm run dev:theme:auto`；创建空文件后，watcher 会自动补齐响应式入口、共享字体声明和 generated include。
+
 ---
 
 ## 三、在 VS Code 中使用 Skill

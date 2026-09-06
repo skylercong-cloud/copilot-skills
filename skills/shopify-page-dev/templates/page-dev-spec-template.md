@@ -12,11 +12,33 @@
 | varScope          | `.xxx`                            |
 | PC 设计稿宽度     | 2560px / 1920px（选择一个）       |
 | Mobile 设计稿宽度 | 390px / 375px / 750px（选择一个） |
+| Responsive profile | `readable` / `dense`（按区域选择） |
+| fixedCore          | 可选，例如 `breakpoint: 1500, width: 1200` |
 
 ## Figma链接
 
 - PC 设计稿：`粘贴 Figma Frame 链接`
 - Mobile 设计稿：`粘贴 Figma Frame 链接`
+
+## scss-kit 配置
+
+```json
+{
+  "design": { "desktopWidth": 2560, "mobileWidth": 390 },
+  "fixedCore": null,
+  "coefficients": {
+    "readable": { "min": 0.625, "max": 1.5 },
+    "dense": { "min": 0.5, "max": 1.5 }
+  },
+  "autofill": {
+    "entries": [
+      { "file": "src/styles/{page-name}.scss", "varScope": ".{page-name}" }
+    ]
+  }
+}
+```
+
+`r.resp(pc, mobile)` 默认使用 `readable`。产品卡、tag、badge 等空间受限区域使用 `dense` 或父级 `@include r.mode(dense);`。不要使用旧的元素类型、floor、ceiling 或语义系数表。
 
 ## 页面结构（从上到下）
 

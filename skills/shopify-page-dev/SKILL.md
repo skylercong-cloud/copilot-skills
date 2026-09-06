@@ -281,6 +281,22 @@ Create `src/styles/{page-name}.scss` with:
 { "file": "src/styles/{page-name}.scss", "varScope": ".{page-name}" }
 ```
 
+If an entry is registered before its SCSS source exists, keep the registration and start `npm run dev:theme:auto`. The responsive generator reports the entry as `pending` instead of failing. When the empty file is created, the watcher bootstraps the responsive imports, the per-entry generated import, the shared font-face boilerplate, and `@include auto.responsive_autofill_overrides();`; it then generates the real override file. Existing non-empty SCSS files are not overwritten.
+
+For a page whose desktop core is fixed above a breakpoint, add `fixedCore` to `scss-kit.config.json`:
+
+```json
+{
+  "fixedCore": { "breakpoint": 1500, "width": 1200 },
+  "coefficients": {
+    "readable": { "min": 0.625, "max": 1.5 },
+    "dense": { "min": 0.5, "max": 1.5 }
+  }
+}
+```
+
+At `1500px` and above, the generated rule sets `--px-to-vw: 1px`, so dimensional `r.*` output returns to design values. `fixedCore.width` records the core width; it does not create the layout wrapper for you.
+
 **Design width handling:** If this page's design spec differs from the default (PC 2560 / Mobile 390), override CSS variables at the top of the SCSS:
 
 ```scss
@@ -306,7 +322,7 @@ Create `src/styles/{page-name}.scss` with:
 
 | Function                                        | Output                                                                                | When to Use                                                                                                     |
 | ----------------------------------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `r.resp(pc, mobile, desktopType[, mobileType])` | PC: `clamp(min, vw, max)`; Mobile: overridden by scanner via `resp_mb()`              | **Font sizes** — any text that needs clamp min/max bounds. 3rd/4th params control PC/Mobile type independently. |
+| `r.resp(pc, mobile[, profile[, mobileProfile]])` | PC: profile-bounded `clamp()`; Mobile: overridden by scanner via `resp_mb()` | **Font sizes and other bounded dimensions** — omitted profile defaults to `readable`; the third/fourth arguments may be `readable`, `dense`, a number, or a Sass map. |
 | `r.vw(pc, mobile)`                              | PC: `min(vw, px)`; Mobile: scanner generates pure `vw` override                       | **Spacing & dimensions** — padding, margin, gap, width, height                                                  |
 | `r.re(pc-val, mobile-val)`                      | PC: returns first arg as-is; Mobile: scanner writes second arg directly (no wrapping) | **Non-numeric properties** — color, display, background, grid-template-columns, etc.                            |
 
@@ -322,42 +338,31 @@ Create `src/styles/{page-name}.scss` with:
 
 Example: `grid-template-columns: r.re(grid-cols-4, grid-cols-2);` → PC: `repeat(4, 1fr)`, Mobile: `repeat(2, 1fr)`
 
-### Low-Level Helpers (use only when primary functions are insufficient)
+### Profiles and low-level helpers
 
-| Function                         | Description                                                                                         |
-| -------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `r.vw_pc(pc)`                    | PC vw with upper cap: `min(calc(pc * var(--px-to-vw)), pc)`                                         |
-| `r.vw_pc_raw(pc)`                | PC vw without upper cap — for elements that should keep scaling beyond design size                  |
-| `r.vw_mb(mobile)`                | Mobile pure vw: `calc(mobile * var(--px-to-vw-mb))`                                                 |
-| `r.clamp_pc(pc, min)`            | Manual PC clamp: `clamp(min, calc(pc * var(--px-to-vw)), pc)`                                       |
-| `r.clamp_mb(mobile, min[, max])` | Mobile clamp: without `max` → `clamp(min, fluid, mobile)`; with `max` → `clamp(mobile, fluid, max)` |
-| `r.resp_mb(mobile, type)`        | Mobile strategy entry: picks `min-first` / `max-first` / `dual-bound` per config                    |
-| `r.min_px(value, type)`          | Compute clamp min value: `max(design * coef, floor)`                                                |
-| `r.max_px(value, type)`          | Compute clamp max value: `min(design * maxCoef, ceiling)`                                           |
-| `r.coef(type[, range])`          | Read coefficient for a type from config                                                             |
-| `r._floor(type[, range])`        | Read absolute floor value for a type                                                                |
+`r.resp()` no longer accepts semantic element types such as `h1`, `h2`, or `body`. Use the two shared profiles, or a numeric/Sass-map override:
 
-**`r.resp` type parameter options:**
+| Profile | Default min | Default max | Use for |
+| ------- | -----------: | ----------: | ------- |
+| `readable` | `0.625` | `1.5` | Titles, paragraphs, and content with comfortable reading space |
+| `dense` | `0.5` | `1.5` | Product cards, prices, tags, badges, and other space-constrained content |
 
-| Type          | Purpose                          |
-| ------------- | -------------------------------- |
-| `h1`          | Largest headings (banner titles) |
-| `h2`          | Section headings                 |
-| `h3`          | Sub-headings                     |
-| `h4`          | Minor headings                   |
-| `h5`          | Small headings                   |
-| `h6`          | Smallest headings                |
-| `body`        | Paragraph text                   |
-| `small`       | Small text, captions             |
-| `quote`       | Blockquote text                  |
-| `button-text` | Button text                      |
-| `nav-link`    | Navigation link text             |
-| `form-label`  | Form label text                  |
-| `form-input`  | Form input text                  |
-| `price-large` | Large price display              |
-| `price-small` | Small price                      |
-| `badge`       | Badge/tag text                   |
-| `breadcrumb`  | Breadcrumb text                  |
+Bounds are always calculated directly as `design value * coefficient`; there are no semantic coefficient tables, absolute floors/ceilings, or fallback comparisons.
+
+| Function | Description |
+| -------- | ----------- |
+| `r.vw_pc(pc)` | PC vw with the design value as an upper cap |
+| `r.vw_pc_raw(pc)` | PC vw without an upper cap |
+| `r.vw_mb(mobile)` | Mobile pure vw |
+| `r.clamp_pc(pc, min[, max])` | Manual PC clamp |
+| `r.clamp_mb(mobile, min[, max])` | Manual mobile clamp |
+| `r.resp_mb(mobile[, profile])` | Mobile strategy entry selected by `responsive.mobileClampMode` |
+| `r.min_px(value[, profile])` | Returns `value * profile.min` |
+| `r.max_px(value[, profile])` | Returns `value * profile.max` |
+| `r.profile_min(profile)` | Reads a profile minimum coefficient |
+| `r.profile_max(profile)` | Reads a profile maximum coefficient |
+
+`r.mode(readable|dense)` is an inherited mode declaration. Use it on a parent selector when a whole component should share one profile; an explicit child profile overrides it.
 
 **CSS class conventions in this theme:**
 
@@ -373,10 +378,10 @@ Example: `grid-template-columns: r.re(grid-cols-4, grid-cols-2);` → PC: `repea
 
 ```scss
 // Font sizes
-font-size: r.resp(48px, 28px, h1);    // banner title
-font-size: r.resp(40px, 24px, h2);    // section title
-font-size: r.resp(22px, 16px, h3);    // sub-heading
-font-size: r.resp(18px, 14px, body);  // body text
+font-size: r.resp(48px, 28px);                         // readable by default
+font-size: r.resp(40px, 24px, readable);                // section title
+font-size: r.resp(22px, 16px, dense);                   // compact sub-heading
+font-size: r.resp(18px, 14px, (min: 0.55, max: 1.3));   // explicit bounds
 
 // Spacing & dimensions
 padding: r.vw(80px, 40px) r.vw(40px, 20px);
